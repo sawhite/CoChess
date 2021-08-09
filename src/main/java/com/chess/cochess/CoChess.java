@@ -6,6 +6,7 @@ import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
+import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -78,7 +80,7 @@ public class CoChess implements ChessSquareListener {
                 board.doMove(thisMove);
                 String to = board.getFen();
                 display.moveAndAnimate(ChessSquare.fromString(thisMove.getFrom().name()), ChessSquare.fromString(thisMove.getTo().name()), to);
-                display.setPositionReport(positionReporter.analyse(board));
+                updatePositionReport();
                 selectedPiece = Piece.NONE;
                 selectedSquare = null;
                 display.setSelectedSquare(null);
@@ -116,7 +118,30 @@ public class CoChess implements ChessSquareListener {
         display.setPositionReport(positionReporter.analyse(board));
     }
 
+    /**
+     * Update the position report in a background thread, so the GUI is not delayed
+     */
+    private void updatePositionReport() {
+        new BackgroundPositionReporter().execute();
+    }
 
+    // A little SwingWorker class to update the position report in a background thread
+    class BackgroundPositionReporter extends SwingWorker<String, Void> {
+        @Override
+        protected String doInBackground() throws Exception {
+            return positionReporter.analyse(board);
+        }
+
+        @Override
+        protected void done() {
+            try {
+                String report = get();
+                display.setPositionReport(report);
+            } catch (Exception e) {
+               // ignore
+            }
+        }
+    }
 
     /**
      * Returns the legal moves for the piece on the given starting square (if any)

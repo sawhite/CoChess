@@ -25,25 +25,29 @@ public class SimplePositionReporter implements PositionReporter {
         Side side = board.getSideToMove();
         builder.append(side).append(" to move\n\n");
         builder.append(gameStatusString(board));
-        Move bestMove = positionAnalyser.bestMove(board);
-        if (bestMove != null) {
-            builder.append("Consider: ").append(bestMove);
-            builder.append('\n');
-        }
-        List<Variation> variations = positionAnalyser.bestNMoves(3, board);
-        int variationCount = 1;
-        for (Variation v : variations) {
-            StringBuilder b = new StringBuilder();
-            b.append(variationCount);
-            b.append(". ");
-            List<String> moves = v.getMoves();
-            for (String move : moves) {
-                b.append(move);
-                b.append(' ');
+        if (board.legalMoves().isEmpty()) {
+            builder.append("Game Over");
+        } else {
+            Move bestMove = positionAnalyser.bestMove(board);
+            if (bestMove != null) {
+                builder.append("Consider: ").append(bestMove);
+                builder.append('\n');
+                List<Variation> variations = positionAnalyser.bestNMoves(3, board);
+                int variationCount = 1;
+                for (Variation v : variations) {
+                    StringBuilder b = new StringBuilder();
+                    b.append(variationCount);
+                    b.append(". ");
+                    List<String> moves = v.getMoves();
+                    for (String move : moves) {
+                        b.append(move);
+                        b.append(' ');
+                    }
+                    b.append('\n');
+                    variationCount++;
+                    builder.append(b);
+                }
             }
-            b.append('\n');
-            variationCount++;
-            builder.append(b);
         }
         return builder.toString();
     }
