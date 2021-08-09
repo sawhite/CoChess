@@ -8,9 +8,12 @@ import com.github.bhlangonijr.chesslib.move.Move;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -36,8 +39,8 @@ public class CoChess implements ChessSquareListener {
         display = new ChessDisplay("Co-Chess");
         display.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowDeactivated(WindowEvent e) {
-                System.out.println("Display deactivated");
+            public void windowClosing(WindowEvent e) {
+                System.out.println("Display closing");
                 try {
                     positionReporter.shutdown();
                 } catch (IOException ioException) {
@@ -123,8 +126,24 @@ public class CoChess implements ChessSquareListener {
         return allLegalMoves.stream().filter(m -> m.getFrom().equals(square)).collect(Collectors.toList());
     }
 
+    private static Properties loadProperties() {
+        Properties properties = new Properties();
+        File file = new File("CoChess.properties");
+        try (FileReader reader = new FileReader(file)) {
+            properties.load(reader);
+        } catch (IOException e) {
+            System.err.println("Error while loading licence: "+e.getMessage());
+        }
+        return properties;
+    }
 
     public static void main(String[] args) {
+        Properties props = loadProperties();
+        String application = props.getProperty("Application");
+        String licenceCode = props.getProperty("Licence");
+        if (application != null && licenceCode != null) {
+            com.jidesoft.utils.Lm.verifyLicense("Catalysoft Ltd.", application, licenceCode);
+        }
         CoChess chess = new CoChess();
     }
 }

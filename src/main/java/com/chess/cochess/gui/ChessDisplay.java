@@ -31,7 +31,12 @@ public class ChessDisplay extends JFrame {
         layout.setConstraints(controlPanel, new GridBagConstraints(1,2,2,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0),0,0));
         panel.setLayout(layout);
         setContentPane(panel);
-        setSize(1150, 575);
+        int width = 1150;
+        int height = 575;
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = screenSize.width/2 - width/2;
+        int y = screenSize.height/2 - height/2;
+        setBounds(x, y, 1150, 575);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
